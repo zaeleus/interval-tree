@@ -1,0 +1,6 @@
+[package]
+name = "interval-tree"
+version = "0.1.0"
+authors = ["Michael Macias <zaeleus@gmail.com>"]
+
+[dependencies]

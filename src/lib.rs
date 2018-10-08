@@ -279,10 +279,10 @@ mod tests {
 
     fn build_tree() -> IntervalTree<i32, i32> {
         //          15..18
-	//        /        \
-	//    5..8          17..19
-	//   /    \         /    \
-	// 4..8  7..10  16..22  21..24
+        //        /        \
+        //    5..8          17..19
+        //   /    \         /    \
+        // 4..8  7..10  16..22  21..24
         let mut tree = IntervalTree::new();
 
         tree.insert(17..19, 0);

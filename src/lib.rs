@@ -1,5 +1,4 @@
-use std::cmp;
-use std::ops::Range;
+use std::{cmp, ops::Range};
 
 struct Node<K: Clone + Ord, V> {
     key: Range<K>,
@@ -241,11 +240,7 @@ fn balance<K: Clone + Ord, V>(root: Box<Node<K, V>>) -> Box<Node<K, V>> {
     }
 }
 
-fn insert<K, V>(
-    mut root: Box<Node<K, V>>,
-    key: Range<K>,
-    value: V,
-) -> Box<Node<K, V>>
+fn insert<K, V>(mut root: Box<Node<K, V>>, key: Range<K>, value: V) -> Box<Node<K, V>>
 where
     K: Clone + Ord,
 {
@@ -312,17 +307,21 @@ mod tests {
         assert_eq!(node.max, 10);
         assert_eq!(node.height, 2);
 
-	let node = root.left.as_ref()
-	    .and_then(|node| node.left.as_ref())
-	    .unwrap();
+        let node = root
+            .left
+            .as_ref()
+            .and_then(|node| node.left.as_ref())
+            .unwrap();
         assert_eq!(node.key, 4..8);
         assert_eq!(node.value, 3);
         assert_eq!(node.max, 8);
         assert_eq!(node.height, 1);
 
-	let node = root.left.as_ref()
-	    .and_then(|node| node.right.as_ref())
-	    .unwrap();
+        let node = root
+            .left
+            .as_ref()
+            .and_then(|node| node.right.as_ref())
+            .unwrap();
         assert_eq!(node.key, 7..10);
         assert_eq!(node.value, 5);
         assert_eq!(node.max, 10);
@@ -334,17 +333,21 @@ mod tests {
         assert_eq!(node.max, 24);
         assert_eq!(node.height, 2);
 
-	let node = root.right.as_ref()
-	    .and_then(|node| node.left.as_ref())
-	    .unwrap();
+        let node = root
+            .right
+            .as_ref()
+            .and_then(|node| node.left.as_ref())
+            .unwrap();
         assert_eq!(node.key, 16..22);
         assert_eq!(node.value, 6);
         assert_eq!(node.max, 22);
         assert_eq!(node.height, 1);
 
-	let node = root.right.as_ref()
-	    .and_then(|node| node.right.as_ref())
-	    .unwrap();
+        let node = root
+            .right
+            .as_ref()
+            .and_then(|node| node.right.as_ref())
+            .unwrap();
         assert_eq!(node.key, 21..24);
         assert_eq!(node.value, 2);
         assert_eq!(node.max, 24);

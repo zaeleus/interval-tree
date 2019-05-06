@@ -15,8 +15,6 @@ interval-tree = { git = "https://github.com/zaeleus/interval-tree.git" }
 ## Usage
 
 ```rust
-extern crate interval_tree;
-
 use interval_tree::IntervalTree;
 
 fn main() {

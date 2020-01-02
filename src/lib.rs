@@ -10,7 +10,7 @@ struct Node<K: Clone + Ord, V> {
 }
 
 impl<K: Clone + Ord, V> Node<K, V> {
-    pub fn new(key: Range<K>, value: V) -> Self {
+    fn new(key: Range<K>, value: V) -> Self {
         let max = key.end.clone();
 
         Self {

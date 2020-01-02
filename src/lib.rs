@@ -10,10 +10,10 @@ struct Node<K: Clone + Ord, V> {
 }
 
 impl<K: Clone + Ord, V> Node<K, V> {
-    pub fn new(key: Range<K>, value: V) -> Node<K, V> {
+    pub fn new(key: Range<K>, value: V) -> Self {
         let max = key.end.clone();
 
-        Node {
+        Self {
             key,
             value,
             max,
@@ -39,8 +39,8 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
     /// use interval_tree::IntervalTree;
     /// let _tree: IntervalTree<u64, &str> = IntervalTree::new();
     /// ```
-    pub fn new() -> IntervalTree<K, V> {
-        IntervalTree { root: None }
+    pub fn new() -> Self {
+        Self { root: None }
     }
 
     /// Adds an interval-value pair into the tree.

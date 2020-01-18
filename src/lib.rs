@@ -82,12 +82,12 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
     /// let mut iter = tree.find(8..10);
     ///
     /// let entry = iter.next().unwrap();
-    /// assert_eq!(entry.key, &(3..9));
-    /// assert_eq!(entry.value, &"walnut");
+    /// assert_eq!(entry.key(), &(3..9));
+    /// assert_eq!(entry.get(), &"walnut");
     ///
     /// let entry = iter.next().unwrap();
-    /// assert_eq!(entry.key, &(7..13));
-    /// assert_eq!(entry.value, &"ash");
+    /// assert_eq!(entry.key(), &(7..13));
+    /// assert_eq!(entry.get(), &"ash");
     ///
     /// assert!(iter.next().is_none());
     /// ```
@@ -98,9 +98,25 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
 }
 
 #[derive(Debug)]
-pub struct Entry<'a, K: Clone + Ord + 'a, V: 'a> {
+pub struct Entry<'a, K: Clone + Ord, V> {
+    #[deprecated(note = "use `entry.key()` instead")]
     pub key: &'a Range<K>,
+    #[deprecated(note = "use `entry.get()` instead")]
     pub value: &'a V,
+}
+
+impl<'a, K: Clone + Ord, V> Entry<'a, K, V> {
+    /// Returns a reference to the key in the entry.
+    pub fn key(&self) -> &Range<K> {
+        #[allow(deprecated)]
+        self.key
+    }
+
+    /// Returns a reference to the value in the entry.
+    pub fn get(&self) -> &V {
+        #[allow(deprecated)]
+        self.value
+    }
 }
 
 pub struct Find<'a, K: Clone + Ord + 'a, V: 'a> {
@@ -132,6 +148,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
             }
 
             if intersects(&self.key, &node.key) {
+                #[allow(deprecated)]
                 return Some(Entry {
                     key: &node.key,
                     value: &node.value,
@@ -361,23 +378,23 @@ mod tests {
 
         assert_eq!(entries.len(), 6);
 
-        assert_eq!(entries[0].key, &(15..18));
-        assert_eq!(entries[0].value, &4);
+        assert_eq!(entries[0].key(), &(15..18));
+        assert_eq!(entries[0].get(), &4);
 
-        assert_eq!(entries[1].key, &(17..19));
-        assert_eq!(entries[1].value, &0);
+        assert_eq!(entries[1].key(), &(17..19));
+        assert_eq!(entries[1].get(), &0);
 
-        assert_eq!(entries[2].key, &(16..22));
-        assert_eq!(entries[2].value, &6);
+        assert_eq!(entries[2].key(), &(16..22));
+        assert_eq!(entries[2].get(), &6);
 
-        assert_eq!(entries[3].key, &(5..8));
-        assert_eq!(entries[3].value, &1);
+        assert_eq!(entries[3].key(), &(5..8));
+        assert_eq!(entries[3].get(), &1);
 
-        assert_eq!(entries[4].key, &(7..10));
-        assert_eq!(entries[4].value, &5);
+        assert_eq!(entries[4].key(), &(7..10));
+        assert_eq!(entries[4].get(), &5);
 
-        assert_eq!(entries[5].key, &(4..8));
-        assert_eq!(entries[5].value, &3);
+        assert_eq!(entries[5].key(), &(4..8));
+        assert_eq!(entries[5].get(), &3);
     }
 
     #[test]

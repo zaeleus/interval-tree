@@ -1,7 +1,7 @@
-use std::{cmp, ops::Range};
+use std::{cmp, ops::RangeInclusive};
 
 struct Node<K: Clone + Ord, V> {
-    key: Range<K>,
+    key: RangeInclusive<K>,
     value: V,
     max: K,
     height: u32,
@@ -10,8 +10,8 @@ struct Node<K: Clone + Ord, V> {
 }
 
 impl<K: Clone + Ord, V> Node<K, V> {
-    fn new(key: Range<K>, value: V) -> Self {
-        let max = key.end.clone();
+    fn new(key: RangeInclusive<K>, value: V) -> Self {
+        let max = key.end().clone();
 
         Self {
             key,
@@ -54,11 +54,11 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
     ///
     /// let mut tree = IntervalTree::new();
     ///
-    /// tree.insert(2..6, "elm");
-    /// tree.insert(7..13, "ash");
-    /// tree.insert(7..13, "walnut");
+    /// tree.insert(2..=6, "elm");
+    /// tree.insert(7..=13, "ash");
+    /// tree.insert(7..=13, "walnut");
     /// ```
-    pub fn insert(&mut self, key: Range<K>, value: V) {
+    pub fn insert(&mut self, key: RangeInclusive<K>, value: V) {
         self.root = if let Some(root) = self.root.take() {
             Some(insert(root, key, value))
         } else {
@@ -75,23 +75,23 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
     ///
     /// let mut tree = IntervalTree::new();
     ///
-    /// tree.insert(2..6, "elm");
-    /// tree.insert(7..13, "ash");
-    /// tree.insert(3..9, "walnut");
+    /// tree.insert(2..=6, "elm");
+    /// tree.insert(7..=13, "ash");
+    /// tree.insert(3..=9, "walnut");
     ///
-    /// let mut iter = tree.find(8..10);
+    /// let mut iter = tree.find(8..=10);
     ///
     /// let entry = iter.next().unwrap();
-    /// assert_eq!(entry.key(), &(3..9));
+    /// assert_eq!(entry.key(), &(3..=9));
     /// assert_eq!(entry.get(), &"walnut");
     ///
     /// let entry = iter.next().unwrap();
-    /// assert_eq!(entry.key(), &(7..13));
+    /// assert_eq!(entry.key(), &(7..=13));
     /// assert_eq!(entry.get(), &"ash");
     ///
     /// assert!(iter.next().is_none());
     /// ```
-    pub fn find(&self, key: Range<K>) -> Find<K, V> {
+    pub fn find(&self, key: RangeInclusive<K>) -> Find<K, V> {
         let nodes = self.root.iter().map::<&Node<K, V>, _>(|n| n).collect();
         Find { nodes, key }
     }
@@ -100,14 +100,14 @@ impl<K: Clone + Ord, V> IntervalTree<K, V> {
 #[derive(Debug)]
 pub struct Entry<'a, K: Clone + Ord, V> {
     #[deprecated(note = "use `entry.key()` instead")]
-    pub key: &'a Range<K>,
+    pub key: &'a RangeInclusive<K>,
     #[deprecated(note = "use `entry.get()` instead")]
     pub value: &'a V,
 }
 
 impl<'a, K: Clone + Ord, V> Entry<'a, K, V> {
     /// Returns a reference to the key in the entry.
-    pub fn key(&self) -> &Range<K> {
+    pub fn key(&self) -> &RangeInclusive<K> {
         #[allow(deprecated)]
         self.key
     }
@@ -121,7 +121,7 @@ impl<'a, K: Clone + Ord, V> Entry<'a, K, V> {
 
 pub struct Find<'a, K: Clone + Ord + 'a, V: 'a> {
     nodes: Vec<&'a Node<K, V>>,
-    key: Range<K>,
+    key: RangeInclusive<K>,
 }
 
 impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
@@ -131,7 +131,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
         loop {
             let node = self.nodes.pop()?;
 
-            if self.key.start >= node.max {
+            if *self.key.start() >= node.max {
                 continue;
             }
 
@@ -139,7 +139,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
                 self.nodes.push(left);
             }
 
-            if self.key.end <= node.key.start {
+            if self.key.end() <= node.key.start() {
                 continue;
             }
 
@@ -175,7 +175,7 @@ fn update_height<K: Clone + Ord, V>(root: &mut Node<K, V>) {
 }
 
 fn update_max<K: Clone + Ord, V>(root: &mut Node<K, V>) {
-    root.max = root.key.end.clone();
+    root.max = root.key.end().clone();
 
     if let Some(ref left) = root.left {
         if left.max > root.max {
@@ -257,17 +257,17 @@ fn balance<K: Clone + Ord, V>(root: Box<Node<K, V>>) -> Box<Node<K, V>> {
     }
 }
 
-fn insert<K, V>(mut root: Box<Node<K, V>>, key: Range<K>, value: V) -> Box<Node<K, V>>
+fn insert<K, V>(mut root: Box<Node<K, V>>, key: RangeInclusive<K>, value: V) -> Box<Node<K, V>>
 where
     K: Clone + Ord,
 {
-    if key.start <= root.key.start {
+    if key.start() <= root.key.start() {
         root.left = if let Some(left) = root.left.take() {
             Some(insert(left, key, value))
         } else {
             Some(Box::new(Node::new(key, value)))
         }
-    } else if key.start > root.key.start {
+    } else if key.start() > root.key.start() {
         root.right = if let Some(right) = root.right.take() {
             Some(insert(right, key, value))
         } else {
@@ -281,8 +281,8 @@ where
     balance(root)
 }
 
-fn intersects<K: Clone + Ord>(r: &Range<K>, s: &Range<K>) -> bool {
-    r.start < s.end && s.start < r.end
+fn intersects<K: Clone + Ord>(r: &RangeInclusive<K>, s: &RangeInclusive<K>) -> bool {
+    r.start() < s.end() && s.start() < r.end()
 }
 
 #[cfg(test)]
@@ -297,13 +297,13 @@ mod tests {
         // 4..8  7..10  16..22  21..24
         let mut tree = IntervalTree::new();
 
-        tree.insert(17..19, 0);
-        tree.insert(5..8, 1);
-        tree.insert(21..24, 2);
-        tree.insert(4..8, 3);
-        tree.insert(15..18, 4);
-        tree.insert(7..10, 5);
-        tree.insert(16..22, 6);
+        tree.insert(17..=19, 0);
+        tree.insert(5..=8, 1);
+        tree.insert(21..=24, 2);
+        tree.insert(4..=8, 3);
+        tree.insert(15..=18, 4);
+        tree.insert(7..=10, 5);
+        tree.insert(16..=22, 6);
 
         tree
     }
@@ -313,13 +313,13 @@ mod tests {
         let tree = build_tree();
 
         let root = tree.root.as_ref().unwrap();
-        assert_eq!(root.key, 15..18);
+        assert_eq!(root.key, 15..=18);
         assert_eq!(root.value, 4);
         assert_eq!(root.max, 24);
         assert_eq!(root.height, 3);
 
         let node = root.left.as_ref().unwrap();
-        assert_eq!(node.key, 5..8);
+        assert_eq!(node.key, 5..=8);
         assert_eq!(node.value, 1);
         assert_eq!(node.max, 10);
         assert_eq!(node.height, 2);
@@ -329,7 +329,7 @@ mod tests {
             .as_ref()
             .and_then(|node| node.left.as_ref())
             .unwrap();
-        assert_eq!(node.key, 4..8);
+        assert_eq!(node.key, 4..=8);
         assert_eq!(node.value, 3);
         assert_eq!(node.max, 8);
         assert_eq!(node.height, 1);
@@ -339,13 +339,13 @@ mod tests {
             .as_ref()
             .and_then(|node| node.right.as_ref())
             .unwrap();
-        assert_eq!(node.key, 7..10);
+        assert_eq!(node.key, 7..=10);
         assert_eq!(node.value, 5);
         assert_eq!(node.max, 10);
         assert_eq!(node.height, 1);
 
         let node = root.right.as_ref().unwrap();
-        assert_eq!(node.key, 17..19);
+        assert_eq!(node.key, 17..=19);
         assert_eq!(node.value, 0);
         assert_eq!(node.max, 24);
         assert_eq!(node.height, 2);
@@ -355,7 +355,7 @@ mod tests {
             .as_ref()
             .and_then(|node| node.left.as_ref())
             .unwrap();
-        assert_eq!(node.key, 16..22);
+        assert_eq!(node.key, 16..=22);
         assert_eq!(node.value, 6);
         assert_eq!(node.max, 22);
         assert_eq!(node.height, 1);
@@ -365,7 +365,7 @@ mod tests {
             .as_ref()
             .and_then(|node| node.right.as_ref())
             .unwrap();
-        assert_eq!(node.key, 21..24);
+        assert_eq!(node.key, 21..=24);
         assert_eq!(node.value, 2);
         assert_eq!(node.max, 24);
         assert_eq!(node.height, 1);
@@ -374,38 +374,38 @@ mod tests {
     #[test]
     fn test_find() {
         let tree = build_tree();
-        let entries: Vec<_> = tree.find(7..20).collect();
+        let entries: Vec<_> = tree.find(7..=20).collect();
 
         assert_eq!(entries.len(), 6);
 
-        assert_eq!(entries[0].key(), &(15..18));
+        assert_eq!(entries[0].key(), &(15..=18));
         assert_eq!(entries[0].get(), &4);
 
-        assert_eq!(entries[1].key(), &(17..19));
+        assert_eq!(entries[1].key(), &(17..=19));
         assert_eq!(entries[1].get(), &0);
 
-        assert_eq!(entries[2].key(), &(16..22));
+        assert_eq!(entries[2].key(), &(16..=22));
         assert_eq!(entries[2].get(), &6);
 
-        assert_eq!(entries[3].key(), &(5..8));
+        assert_eq!(entries[3].key(), &(5..=8));
         assert_eq!(entries[3].get(), &1);
 
-        assert_eq!(entries[4].key(), &(7..10));
+        assert_eq!(entries[4].key(), &(7..=10));
         assert_eq!(entries[4].get(), &5);
 
-        assert_eq!(entries[5].key(), &(4..8));
+        assert_eq!(entries[5].key(), &(4..=8));
         assert_eq!(entries[5].get(), &3);
     }
 
     #[test]
     fn test_intersect() {
-        assert!(intersects(&(0..8), &(4..8)));
-        assert!(intersects(&(0..8), &(-3..17)));
-        assert!(intersects(&(0..8), &(-2..2)));
-        assert!(intersects(&(0..8), &(5..13)));
-        assert!(!intersects(&(0..8), &(-1..0)));
-        assert!(!intersects(&(0..8), &(-9..-2)));
-        assert!(!intersects(&(0..8), &(14..20)));
-        assert!(!intersects(&(0..8), &(8..9)));
+        assert!(intersects(&(0..=8), &(4..=8)));
+        assert!(intersects(&(0..=8), &(-3..=17)));
+        assert!(intersects(&(0..=8), &(-2..=2)));
+        assert!(intersects(&(0..=8), &(5..=13)));
+        assert!(!intersects(&(0..=8), &(-1..=0)));
+        assert!(!intersects(&(0..=8), &(-9..=-2)));
+        assert!(!intersects(&(0..=8), &(14..=20)));
+        assert!(!intersects(&(0..=8), &(8..=9)));
     }
 }

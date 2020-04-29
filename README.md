@@ -20,15 +20,15 @@ use interval_tree::IntervalTree;
 fn main() {
     let mut tree = IntervalTree::new();
 
-    tree.insert(18..=31, "pistachio");
-    tree.insert(10..=12, "almond");
-    tree.insert(17..=24, "coconut");
+    tree.insert(18..=31, "apple");
+    tree.insert(10..=12, "orange");
+    tree.insert(17..=24, "pear");
 
     for entry in tree.find(20..=25) {
-        println!("{:?} => {}", entry.key, entry.value);
+        println!("{:?} => {}", entry.key(), entry.get());
     }
 
-    // 17..=24 => coconut
-    // 18..=31 => pistachio
+    // 17..=24 => pear
+    // 18..=31 => apple
 }
 ```

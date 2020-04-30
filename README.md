@@ -9,7 +9,7 @@ A self-balancing [interval tree] library in Rust.
 Add `interval-tree` as a dependency to `Cargo.toml`.
 
 ```toml
-interval-tree = { git = "https://github.com/zaeleus/interval-tree.git" }
+interval-tree = { git = "https://github.com/zaeleus/interval-tree.git", tag = "v0.1.0" }
 ```
 
 ## Usage

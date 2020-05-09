@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2020-05-08
 
-## Changed
+### Changed
 
   * Keys changed from `Range` to `RangeInclusive`. The ranges used as keys were
     always treated as closed intervals, so using `RangeInclusive` makes that

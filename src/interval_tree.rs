@@ -84,10 +84,23 @@ fn height<K: Clone + Ord, V>(root: &Option<Box<Node<K, V>>>) -> u32 {
     root.as_ref().map_or(0, |n| n.height)
 }
 
-fn balance_factor<K: Clone + Ord, V>(root: &Node<K, V>) -> i32 {
+enum BalanceFactor {
+    LeftHeavy,
+    Balanced,
+    RightHeavy,
+}
+
+fn balance_factor<K: Clone + Ord, V>(root: &Node<K, V>) -> BalanceFactor {
     let left_height = height(&root.left) as i32;
     let right_height = height(&root.right) as i32;
-    left_height - right_height
+
+    if left_height > right_height && left_height - right_height >= 2 {
+        BalanceFactor::LeftHeavy
+    } else if left_height < right_height && right_height - left_height >= 2 {
+        BalanceFactor::RightHeavy
+    } else {
+        BalanceFactor::Balanced
+    }
 }
 
 fn update_height<K: Clone + Ord, V>(root: &mut Node<K, V>) {
@@ -172,10 +185,9 @@ fn balance_right_heavy_tree<K: Clone + Ord, V>(mut root: Box<Node<K, V>>) -> Box
 
 fn balance<K: Clone + Ord, V>(root: Box<Node<K, V>>) -> Box<Node<K, V>> {
     match balance_factor(&root) {
-        -2 => balance_right_heavy_tree(root),
-        -1 | 0 | 1 => root,
-        2 => balance_left_heavy_tree(root),
-        _ => unreachable!(),
+        BalanceFactor::LeftHeavy => balance_left_heavy_tree(root),
+        BalanceFactor::Balanced => root,
+        BalanceFactor::RightHeavy => balance_right_heavy_tree(root),
     }
 }
 

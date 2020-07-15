@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+  * Intersections include the endpoints, e.g., [0, 1] and [3, 5] now intersect
+    [1, 3].
+
 ## 0.2.0 - 2020-05-08
 
 ### Changed

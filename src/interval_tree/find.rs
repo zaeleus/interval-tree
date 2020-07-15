@@ -24,7 +24,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
         loop {
             let node = self.nodes.pop()?;
 
-            if *self.key.start() >= node.max {
+            if *self.key.start() > node.max {
                 continue;
             }
 
@@ -32,7 +32,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
                 self.nodes.push(left);
             }
 
-            if self.key.end() <= node.key.start() {
+            if self.key.end() < node.key.start() {
                 continue;
             }
 
@@ -52,7 +52,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
 }
 
 fn intersects<K: Clone + Ord>(r: &RangeInclusive<K>, s: &RangeInclusive<K>) -> bool {
-    r.start() < s.end() && s.start() < r.end()
+    r.start() <= s.end() && s.start() <= r.end()
 }
 
 #[cfg(test)]
@@ -65,9 +65,9 @@ mod tests {
         assert!(intersects(&(0..=8), &(-3..=17)));
         assert!(intersects(&(0..=8), &(-2..=2)));
         assert!(intersects(&(0..=8), &(5..=13)));
-        assert!(!intersects(&(0..=8), &(-1..=0)));
+        assert!(intersects(&(0..=8), &(-1..=0)));
+        assert!(intersects(&(0..=8), &(8..=9)));
         assert!(!intersects(&(0..=8), &(-9..=-2)));
         assert!(!intersects(&(0..=8), &(14..=20)));
-        assert!(!intersects(&(0..=8), &(8..=9)));
     }
 }

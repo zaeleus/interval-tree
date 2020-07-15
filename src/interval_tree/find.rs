@@ -41,11 +41,7 @@ impl<'a, K: Clone + Ord + 'a, V: 'a> Iterator for Find<'a, K, V> {
             }
 
             if intersects(&self.key, &node.key) {
-                #[allow(deprecated)]
-                return Some(Entry {
-                    key: &node.key,
-                    value: &node.value,
-                });
+                return Some(Entry::new(&node.key, &node.value));
             }
         }
     }
